@@ -14,6 +14,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 
+import org.apache.http.HttpResponse;
+import org.apache.http.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,13 +28,23 @@ import java.util.List;
 public class OtherActivity extends ActionBarActivity {
 
 
-    // List view
+    JSONParser jsonParser;
 
     // Listview Adapter
     ArrayAdapter<String> adapter;
 
+    HttpResponse response=null;
+
     // Search EditText
     EditText inputSearch;
+    StringBuilder stringBuilder = new StringBuilder();
+    String title;
+    String category;
+    String owner;
+    String status;
+    Object current_user;
+    int book_id,count;
+    String [] products  = null;
 
 
     // ArrayList for Listview
@@ -41,11 +57,36 @@ public class OtherActivity extends ActionBarActivity {
         final Intent intent=getIntent();
 
         String query=intent.getStringExtra("search");
+        String url="http://172.20.192.102:8080/book/search";
+        jsonParser=new JSONParser();
+        try {
+            response=jsonParser.doInBackground(url,query);
+            HttpEntity entity = response.getEntity();
+            InputStream stream = entity.getContent();
+            int b;
+            while ((b = stream.read()) != -1) {
+                stringBuilder.append((char) b);
+            }
+            stream.close();
+            JSONObject jsonObject=new JSONObject(stringBuilder.toString());
+             count= (int) jsonObject.get("count");
+            products =new String[count];
+            for(int i=0;i<count;i++)
+            {
+                title= (String) ((JSONArray)jsonObject.get("books")).getJSONObject(i).get("book_title");
+                category= (String) ((JSONArray)jsonObject.get("books")).getJSONObject(i).get("category");
+                book_id=(int) ((JSONArray)jsonObject.get("books")).getJSONObject(i).get("book_id");
+                owner=(String) ((JSONArray)jsonObject.get("books")).getJSONObject(i).get("owner");
+                status=(String) ((JSONArray)jsonObject.get("books")).getJSONObject(i).get("status");
+                current_user= ((JSONArray)jsonObject.get("books")).getJSONObject(i).get("current_user") ;
+                products[i]=title;
+            }
 
-        // Listview Data
-        String products[] = {query,"Dell Inspiron", "HTC One X", "HTC Wildfire S", "HTC Sense", "HTC Sensation XE",
-                "iPhone 4S", "Samsung Galaxy Note 800",
-                "Samsung Galaxy S3", "MacBook Air", "Mac Mini", "MacBook Pro"};
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         final ListView lv = (ListView) findViewById(R.id.list_view);
 

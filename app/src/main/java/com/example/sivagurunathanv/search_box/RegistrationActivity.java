@@ -9,8 +9,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.apache.http.HttpResponse;
+
 
 public class RegistrationActivity extends ActionBarActivity {
+
+    JSONParser jsonParser=new JSONParser();
+
+    HttpResponse response=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,11 +61,35 @@ public class RegistrationActivity extends ActionBarActivity {
         EditText address=(EditText) findViewById(R.id.address);
         EditText location=(EditText) findViewById(R.id.locality);
         EditText pincode=(EditText) findViewById(R.id.pincode);
+        EditText mobile=(EditText) findViewById(R.id.mobile);
+        String url="http://172.20.195.191:8080/user";
+        String name=full_name.getText().toString();
+        String email_id=email.getText().toString().toLowerCase();
+        String password=pass.getText().toString();
+        String address_type=address.getText().toString();
+        String location_ad=location.getText().toString();
+        String pin=pincode.getText().toString();
+        String mob=mobile.getText().toString();
 
-      //  if(full_name != null && email !=null && pass != null && address != null && location != null && pincode != null) {
-            Intent intent = new Intent(this, SearchableActivity.class);
-            setIntent(intent);
-      //  }
+        if(name != null && email_id !=null && password != null && address_type != null && location_ad != null && pin != null && mob!= null) {
+            try{
+                response=jsonParser.doInBackground(url, name, email_id, password, location_ad, mob, address_type, pin);
+                if(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode()==201)
+                {
+                    Intent intent = new Intent(this, SearchableActivity.class);
+                    setIntent(intent);
+                }
+                else
+                {
+                    //Toast other error
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+        }
 
     }
 }
